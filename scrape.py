@@ -26,13 +26,22 @@ def grant_info(grant_url):
     amount = infobox[1].text
     funded_since = infobox[2].text
     assert funded_since.startswith("Funded since")
-    rainer_fellow = infobox[3].text
-    assert rainer_fellow.startswith("Rainer Fellow:")
-    
+    funded_since = funded_since[len("Funded since"):].strip()
+
+    try:
+        rainer_fellow = infobox[3].text
+    except IndexError:
+        # Some grantees are not Rainer Fellows, so ignore them
+        rainer_fellow = ""
+
+    if rainer_fellow:
+        assert rainer_fellow.startswith("Rainer Fellow:")
+        rainer_fellow = rainer_fellow[len("Rainer Fellow:"):].strip()
+
     tag = soup.find(text=re.compile("Why we invest")).next_element
     while tag.name != "p":
         tag = tag.next_element
-    why_invest = tag.text
+    why_invest = tag.text.strip()
 
     return {"grantee": grantee,
             "url": grant_url,
