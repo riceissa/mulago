@@ -23,7 +23,10 @@ def grant_info(grant_url):
     grantee = soup.find("h1").text
 
     infobox = soup.find("div", {"class": "info"}).find_all("p")
-    amount = infobox[1].text
+
+    amount = infobox[1].text.strip()
+    assert amount.startswith("$")
+
     funded_since = infobox[2].text
     assert funded_since.startswith("Funded since")
     funded_since = funded_since[len("Funded since"):].strip()
