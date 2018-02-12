@@ -13,7 +13,7 @@ def main():
                       "rainer_fellow", "why_invest"]
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
-        for grant_url in grantee_urls():
+        for grant_url in grant_urls():
             writer.writerow(grant_info(grant_url))
 
 
@@ -42,7 +42,7 @@ def grant_info(grant_url):
             "why_invest": why_invest}
 
 
-def grantee_urls():
+def grant_urls():
     with open("who-we-fund.html", "r") as f:
         soup = BeautifulSoup(f, "lxml")
         for link in soup.find_all("a"):
