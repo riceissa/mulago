@@ -14,11 +14,12 @@ def main():
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         for grant_url in grant_urls():
-            writer.writerow(grant_info(grant_url))
+            writer.writerows(grant_info(grant_url))
 
 
 def grant_info(grant_url):
     """Get info about a specific grant."""
+    result = []
     soup = BeautifulSoup(requests.get(grant_url).content, "lxml")
     grantee = soup.find("h1").text
 
@@ -46,12 +47,33 @@ def grant_info(grant_url):
         tag = tag.next_element
     why_invest = tag.text.strip()
 
-    return {"grantee": grantee,
+    grant_template = {"grantee": grantee,
             "url": grant_url,
-            "amount": amount,
+            # "amount": amount,
             "funded_since": funded_since,
             "rainer_fellow": rainer_fellow,
             "why_invest": why_invest}
+
+    # Some grantees have two payment methods listed, and we want to record them
+    # as separate donations.
+    if "; " in amount:
+        methods = amount.split("; ")
+        for method in methods:
+            grant = grant_template.copy()
+            grant.update({"amount": method})
+            result.append(grant)
+    elif ", " in amount:
+        methods = amount.split(", ")
+        for method in methods:
+            grant = grant_template.copy()
+            grant.update({"amount": method})
+            result.append(grant)
+    else:
+        grant = grant_template.copy()
+        grant.update({"amount": amount})
+        result.append(grant)
+
+    return result
 
 
 def grant_urls():
