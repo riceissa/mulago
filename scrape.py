@@ -2,6 +2,7 @@
 
 import pdb
 
+import sys
 import csv
 import re
 import requests
@@ -20,6 +21,7 @@ def main():
 def grant_info(grant_url):
     """Get info about a specific grant."""
     result = []
+    print("Downloading %s" % grant_url, file=sys.stderr)
     soup = BeautifulSoup(requests.get(grant_url).content, "lxml")
     grantee = soup.find("h1").text
 
@@ -28,19 +30,14 @@ def grant_info(grant_url):
     amount = infobox[1].text.strip()
     assert amount.startswith("$")
 
-    funded_since = infobox[2].text
-    assert funded_since.startswith("Funded since")
-    funded_since = funded_since[len("Funded since"):].strip()
-
-    try:
-        rainer_fellow = infobox[3].text
-    except IndexError:
-        # Some grantees are not Rainer Fellows, so ignore them
-        rainer_fellow = ""
-
-    if rainer_fellow:
-        assert rainer_fellow.startswith("Rainer Fellow:")
-        rainer_fellow = rainer_fellow[len("Rainer Fellow:"):].strip()
+    funded_since = ""
+    rainer_fellow = ""
+    for item in infobox:
+        text = item.text.strip()
+        if text.startswith("Funded since"):
+            funded_since = text[len("Funded since"):].strip()
+        elif text.startswith("Rainer Fellow:"):
+            rainer_fellow = text[len("Rainer Fellow:"):].strip()
 
     tag = soup.find(text=re.compile("Why we invest")).next_element
     while tag.name != "p":
@@ -80,7 +77,7 @@ def grant_urls():
     with open("who-we-fund.html", "r") as f:
         soup = BeautifulSoup(f, "lxml")
         for link in soup.find_all("a"):
-            if "/who-we-fund/" in str(link.get("href")):
+            if "/Portfolio/" in str(link.get("href")):
                 yield link.get("href")
 
 if __name__ == "__main__":
