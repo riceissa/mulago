@@ -23,7 +23,7 @@ def main():
                      row['why_invest'] + "”")
 
             print(("    " if first else "    ,") + "(" + ",".join([
-                mysql_quote("Mulago"),  # donor
+                mysql_quote("Mulago Foundation"),  # donor
                 mysql_quote(row['grantee']),  # donee
                 str(amount),  # amount
                 mysql_quote(row['funded_since'] + "-01-01"),  # donation_date
